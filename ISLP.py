@@ -112,6 +112,27 @@ df_cust_group.duplicated().value_counts()
 df_cust_group['customer_unique_id'].duplicated().value_counts() # os duplicados são porque mudaram de UF
 df_cust_group['Id_geral']=np.arange(1, df_cust_group.shape[0]+1, step=1)
 
+#  orders analysis by customers
+# Histogram
+f, ax = plt.subplots()
+sns.histplot(df_cust_group['payment_value_mean'], \
+    stat='probability', log_scale=True)
+ax.set_xlabel('Valor médio dos pedidos por consumidor')
+plt.show()
+
+f, ax = plt.subplots()
+sns.histplot(df_cust_group['payment_value_sum'], \
+    stat='probability', log_scale=True)
+ax.set_xlabel('Valor total dos pedidos por por consumidor')
+plt.show()
+
+# Counts
+f, ax = plt.subplots()
+sns.countplot(data=df_cust_group['short_UF'], \
+    order=df_cust_group['short_UF'].value_counts().index, stat='proportion')
+ax.set_xlabel('Número de consumidores')
+plt.show()
+
 
 
 # Analysing correlation (by customers)
@@ -119,12 +140,13 @@ correlation_temp = df_cust_group[['payment_value_sum', 'payment_value_mean',
        'freight_value_sum', 'freight_value_mean', 'customer_state', 'UF',
        'mean_income']].corr(numeric_only=True)
 
-# Plot
+# Plots
 fig, ax = plt.subplots()
 fig.subtitle('Correlation')
 sns.heatmap(correlation_temp, cmap=sns.color_palette("YlOrBr", as_cmap=True),  \
 linecolor='white', linewidths=0.5)
 plt.show()
+
 
 
 # Linear Regression analysis

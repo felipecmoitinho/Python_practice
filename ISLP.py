@@ -76,7 +76,7 @@ correlation_temp = df[['payment_value', 'price', 'freight_value',
 
 # Plot
 fig, ax = plt.subplots()
-fig.subtitle('Correlation')
+ax.set_title('Correlation')
 sns.heatmap(correlation_temp, cmap=sns.color_palette("YlOrBr", as_cmap=True),  \
 linecolor='white', linewidths=0.5)
 plt.show()
@@ -114,25 +114,59 @@ df_cust_group['Id_geral']=np.arange(1, df_cust_group.shape[0]+1, step=1)
 
 #  orders analysis by customers
 # Histogram
+# Payment value (mean)
 f, ax = plt.subplots()
 sns.histplot(df_cust_group['payment_value_mean'], \
     stat='probability', log_scale=True)
 ax.set_xlabel('Valor médio dos pedidos por consumidor')
 plt.show()
 
+# Payment value (sum)
 f, ax = plt.subplots()
 sns.histplot(df_cust_group['payment_value_sum'], \
     stat='probability', log_scale=True)
 ax.set_xlabel('Valor total dos pedidos por por consumidor')
 plt.show()
 
-# Counts
+# Freight value (sum)
+f, ax = plt.subplots()
+sns.histplot(df_cust_group['freight_value_sum'], \
+    stat='probability', log_scale=True)
+ax.set_xlabel('Valor total frete por por consumidor')
+plt.show()
+
+# Freight value (mean)
+f, ax = plt.subplots()
+sns.histplot(df_cust_group['freight_value_mean'], \
+    stat='probability')
+ax.set_xlabel('Valor médio do frete por consumidor')
+plt.show()
+
+
+
+# Counts 
+# Customers by UF
 f, ax = plt.subplots()
 sns.countplot(data=df_cust_group['short_UF'], \
     order=df_cust_group['short_UF'].value_counts().index, stat='proportion')
-ax.set_xlabel('Número de consumidores')
+ax.set_xlabel('Proporção')
+ax.set_title('Proporção dos consumidores por UF')
 plt.show()
 
+# Boxplots
+# Payment (mean)
+f, ax = subplots()
+sns.boxplot(data=df_cust_group, x='payment_value_mean', y='short_UF')
+ax.set_xlabel('UF')
+ax.set_title('Distribuição do pagamento médio por UF')
+plt.show()
+
+# Payment (sum)
+f, ax = subplots()
+sns.boxplot(data=df_cust_group, x='payment_value_sum', y='short_UF')
+ax.set_xlabel('UF')
+ax.set_title('Distribuição do pagamento total por UF')
+plt.show()
 
 
 # Analysing correlation (by customers)
@@ -140,7 +174,7 @@ correlation_temp = df_cust_group[['payment_value_sum', 'payment_value_mean',
        'freight_value_sum', 'freight_value_mean', 'customer_state', 'UF',
        'mean_income']].corr(numeric_only=True)
 
-# Plots
+# Correlation
 fig, ax = plt.subplots()
 fig.subtitle('Correlation')
 sns.heatmap(correlation_temp, cmap=sns.color_palette("YlOrBr", as_cmap=True),  \
@@ -149,6 +183,8 @@ plt.show()
 
 
 
+
+# Data Science
 # Linear Regression analysis
 # Drop outliers and high leverage
 

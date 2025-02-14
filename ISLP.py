@@ -1,6 +1,7 @@
 import pandas as pd
 from scipy import stats
 import seaborn as sns
+from datetime import datetime
 import matplotlib.pyplot as plt
 import numpy as np
 import kagglehub
@@ -81,6 +82,9 @@ sns.heatmap(correlation_temp, cmap=sns.color_palette("YlOrBr", as_cmap=True),  \
 linecolor='white', linewidths=0.5)
 plt.show()
 
+
+
+# Customers analysis
 # Grouping by costumers Id
 
 df_cust_group = df[['customer_unique_id','payment_value','freight_value']].\
@@ -143,7 +147,6 @@ ax.set_xlabel('Valor médio do frete por consumidor')
 plt.show()
 
 
-
 # Counts 
 # Customers by UF
 f, ax = plt.subplots()
@@ -155,15 +158,15 @@ plt.show()
 
 # Boxplots
 # Payment (mean)
-f, ax = subplots()
-sns.boxplot(data=df_cust_group, x='payment_value_mean', y='short_UF')
+f, ax = plt.subplots()
+sns.boxplot(data=df_cust_group, x='payment_value_mean', y='short_UF', log_scale=True)
 ax.set_xlabel('UF')
 ax.set_title('Distribuição do pagamento médio por UF')
 plt.show()
 
 # Payment (sum)
-f, ax = subplots()
-sns.boxplot(data=df_cust_group, x='payment_value_sum', y='short_UF')
+f, ax = plt.subplots()
+sns.boxplot(data=df_cust_group, x='payment_value_sum', y='short_UF', log_scale=True)
 ax.set_xlabel('UF')
 ax.set_title('Distribuição do pagamento total por UF')
 plt.show()
@@ -181,7 +184,18 @@ sns.heatmap(correlation_temp, cmap=sns.color_palette("YlOrBr", as_cmap=True),  \
 linecolor='white', linewidths=0.5)
 plt.show()
 
+# Order analysis
+# Volume de vendas
+df_ts_gp = df.copy()
+df_ts_gp['order_purchase_timestamp'] = df_ts_gp['order_purchase_timestamp'].str.slice(0,10,1)
+df_ts_gp = df_ts_gp.groupby(['order_status','order_purchase_timestamp']).sum(numeric_only=True)
 
+
+
+
+f, ax = plt.subplots()
+sns.lineplot(data=df_ts_gp, x = 'order_purchase_timestamp', y = 'payment_value', hue = 'order_status')
+plt.show()
 
 
 # Data Science

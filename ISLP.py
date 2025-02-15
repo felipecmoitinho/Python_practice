@@ -6,6 +6,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import kagglehub
 from sklearn import linear_model
+from sklearn.model_selection import train_test_split
+import statsmodels.api as sm
+
 
 # Options
 pd.set_option("display.max_columns", 999)
@@ -173,13 +176,14 @@ plt.show()
 
 
 # Analysing correlation (by customers)
+
 correlation_temp = df_cust_group[['payment_value_sum', 'payment_value_mean',
        'freight_value_sum', 'freight_value_mean', 'customer_state', 'UF',
        'mean_income']].corr(numeric_only=True)
 
 # Correlation
 fig, ax = plt.subplots()
-fig.subtitle('Correlation')
+ax.set_title('Correlation')
 sns.heatmap(correlation_temp, cmap=sns.color_palette("YlOrBr", as_cmap=True),  \
 linecolor='white', linewidths=0.5)
 plt.show()
@@ -187,23 +191,59 @@ plt.show()
 # Order analysis
 # Volume de vendas
 df_ts_gp = df.copy()
-df_ts_gp['order_purchase_timestamp'] = df_ts_gp['order_purchase_timestamp'].str.slice(0,10,1)
+df_ts_gp.reset_index(inplace=True)
+df_ts_gp['order_purchase_timestamp'] = df_ts_gp['order_purchase_timestamp'].str.slice(0,7,1)
+df_ts_gp = df_ts_gp[['order_status','payment_value', 'order_purchase_timestamp']]
 df_ts_gp = df_ts_gp.groupby(['order_status','order_purchase_timestamp']).sum(numeric_only=True)
+df_ts_gp.reset_index(inplace=True)
+df_ts_gp.set_index('order_purchase_timestamp', inplace=True)
+df_ts_gp_pvt = df_ts_gp.pivot(columns = 'order_status', values = 'payment_value')
 
 
-
-
+# Plots
 f, ax = plt.subplots()
-sns.lineplot(data=df_ts_gp, x = 'order_purchase_timestamp', y = 'payment_value', hue = 'order_status')
+sns.lineplot(data=df_ts_gp.loc[df_ts_gp['order_status'].isin(['delivered','canceled'])].\
+    sort_values(by='order_purchase_timestamp'), \
+    x = 'order_purchase_timestamp', 
+    y = 'payment_value', hue = 'order_status', orient='x')
+ax.tick_params(axis='x', labelrotation = 45)
 plt.show()
 
 
+
+
 # Data Science
-# Linear Regression analysis
+# Linear Regression
+# One year order
+
+df_reg = df.copy()
+df_reg['ano'] = df['order_purchase_timestamp'].str.slice(0,4,1)
+df_reg['mes'] = df['order_purchase_timestamp'].str.slice(5,7,1)
+mes_dummy = pd.get_dummies(data = df_reg['mes'])
+payment_type_dummy = pd.get_dummies(data = df_reg['payment_type'])
+
+df_reg = pd.merge(left=df_reg, right=mes_dummy, left_index=True, right_index=True)
+df_reg = pd.merge(left=df_reg, right=payment_type_dummy, left_index=True, right_index=True)
+
+df_reg = df_reg[['order_status','payment_value','price', 'freight_value',
+       'product_category_name', 'product_photos_qty','mean_income', 'ano', 
+     '01', '02', '03', '04', '05',
+       '06', '07', '08', '09', '10', '11', '12', 'boleto', 'credit_card',
+       'debit_card', 'voucher']]
+df_reg = df_reg.loc[df_reg['ano']=='2018']
+
 # Drop outliers and high leverage
+df_reg.dropna(axis=0, inplace=True)
+X = df_reg[['price', \
+    'product_photos_qty','mean_income',
+    '01', '02', '03', '04', '05',
+    '06', '07', '08', '09', '10', '11', '12', 'boleto', 'credit_card',
+    'debit_card', 'voucher']]
+y = df_reg['payment_value']
 
-
-reg = linear_model.LinearRegression()
-
-
-
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=20, shuffle=False)
+reg = linear_model.LinearRegression(fit_intercept=True).fit(X_train, y_train)
+y_pred = reg.predict(X_test)
+reg.coef_
+reg.get_params(deep=True)
+reg.score()
